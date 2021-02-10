@@ -85,7 +85,7 @@ def fasta2phy(msa_input, phy_out):
 
 def create_dir(work_dir, dir_name):
     """Create a new folder in the working_dir
-    if folder exits, do nothing"""
+    if folder exists, do nothing"""
     dirpath = os.path.join(work_dir, dir_name)
     if os.path.exists(dirpath) and os.path.isdir(dirpath):
         pass
@@ -158,7 +158,9 @@ def prepare_codeml(round, fasta_file_name, species_tree, marks, wd):
 
 
 def lnl(codeml_in):
-    """Extract Ln Likelihood values from output files created by codeml"""
+    """Extract Ln Likelihood values from output files created by codeml
+    if lnl can not be extracted, log warning"""
+    log = None
     with open(codeml_in, "r", newline=None) as file_in:
         if os.stat(codeml_in).st_size > 0:  # if file is not empty
             for line in file_in:
@@ -168,8 +170,9 @@ def lnl(codeml_in):
                         if float(x) < 0:
                             log = float(x)
                     break
-        else:
-            log = None
+    if log == None:
+        logging.warning("LnL value was not found at {}. "
+                        "Please, check.".format(str(os.path.basename(codeml_in))))
     return log
 
 
@@ -404,19 +407,26 @@ def output_bm(gene_name, alt_file):
 
 def if_significant(alt_file, null_file, model):
     """Returns true when a gene analyzed
-    has a pval < 0.05 according to LRT"""
+    has a pval < 0.05 according to LRT.
+    Prints a warning if LnL is None"""
     ln_alt = lnl(alt_file)
     ln_null = lnl(null_file)
-    p_val = None
-    if model in ["BS", "BM"]:
-        p_val = lrt(ln_alt, ln_null)
-    elif model == "SM":
-        # in site-model, LRT has 2 degrees of freedom
-        p_val = lrt(ln_alt, ln_null, 2)
-    if p_val < 0.05:
-        return True
-    else:
+    if ln_alt == None or ln_null == None:
+        logging.warning("LRT not performed because the value LnL is missing in {} {} "
+                        "files".format(str(os.path.basename(alt_file)), str(os.path.basename(null_file))))
         return False
+    # if there is LnL values, perform the LRT
+    else:
+        p_val = None
+        if model in ["BS", "BM"]:
+            p_val = lrt(ln_alt, ln_null)
+        elif model == "SM":
+            # in site-model, LRT has 2 degrees of freedom
+            p_val = lrt(ln_alt, ln_null, 2)
+        if p_val < 0.05:
+            return True
+        else:
+            return False
 
 
 def final_output(sign_list, model, run, dirpath):
