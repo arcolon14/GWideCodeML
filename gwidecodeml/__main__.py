@@ -139,17 +139,16 @@ def main():
         os.chdir(working_dir)
 
         # Run codeml in parallel
-        #pool = mp.Pool(t)  # number of# threads
-        #pool.map(utils.run_codeml, [ctl for ctl in gene_names])
-        #pool.close()
-        #os.chdir(working_dir)
+        pool = mp.Pool(t)  # number of# threads
+        pool.map(utils.run_codeml, [ctl for ctl in gene_names])
+        pool.close()
+        os.chdir(working_dir)
 
         if args.lrt_stop:
             logging.info("Codeml has finished, output files successfully created. Exiting...")
             exit()
         else:
             logging.info("Codeml has finished, output files successfully created. Running LRTs...")
-            logging.info("DEBUGGING")
 
         # LRTs, keep genes with p-value < 0.05
         significants = []
