@@ -170,7 +170,7 @@ def lnl(codeml_in):
                         if float(x) < 0:
                             log = float(x)
                     break
-    if log == None:
+    if log is None:
         logging.warning("LnL value was not found at {}. "
                         "Please, check.".format(str(os.path.basename(codeml_in))))
     return log
@@ -377,7 +377,7 @@ def output_bs(gene_name, alt_file):
     """Return significant aa positions and amino-acid changes for branch-site analysis"""
     beb_dict = beb(alt_file)
     for k, v in beb_dict.items():
-        if v != None:
+        if v is not None:
             l_out = gene_name + "\t" + k + "\t" + v
             return l_out
 
@@ -388,7 +388,7 @@ def output_sm(gene_name, alt_file):
     nr_pos = 0
     pos = []
     for k,v in beb_dict.items():
-        if v != None:
+        if v is not None:
             nr_pos += 1
             pos.append(k)
     if len(pos) != 0:
@@ -411,7 +411,7 @@ def if_significant(alt_file, null_file, model):
     Prints a warning if LnL is None"""
     ln_alt = lnl(alt_file)
     ln_null = lnl(null_file)
-    if ln_alt == None or ln_null == None:
+    if ln_alt is None or ln_null is None:
         logging.warning("LRT not performed because the value LnL is missing in {} {} "
                         "files".format(str(os.path.basename(alt_file)), str(os.path.basename(null_file))))
         return False
